@@ -9,7 +9,10 @@ const spawn = require('child_process').spawn;
 require('dotenv').config();
 
 // PhantomJS command-line args and options
-let args = ['./phantom-script.js', process.env.URL];
+let args = ['./phantom-script.js',
+    /* args 1 and 2 */ process.env.LOGIN_URL, process.env.URL,
+    /* args 3 and 4 */ process.env.SITE_USERNAME, process.env.SITE_PASSWORD
+];
 let options = {};
 
 // PhantomJS executable path

@@ -2,3 +2,11 @@
 This small Node app is designed to automatically retrieve a webpage, then email it to a distribution list at a specified time.
 
 Used for generating "reports" to email from data-filled websites.
+
+## Workings
+Node spawns a child PhantomJS process, then emails out the resulting HTML through Nodemailer.
+
+## Install
+Install PhantomJS and add it to your path.
+
+Create a `.env` file specifying a `URL` environment variable. This is the page that will be emailed.

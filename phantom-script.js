@@ -1,16 +1,20 @@
 var system = require('system');
 var page = require('webpage').create();
+
 var websiteAddress = system.args[1];
-console.log(websiteAddress);
+if (websiteAddress === undefined) {
+    throw new Error('No website address specified for PhantomJS process!');
+}
+
 //viewportSize being the actual size of the headless browser
 page.viewportSize = { width: 1680, height: 1050 };
 //the clipRect is the portion of the page you are taking a screenshot of
 page.clipRect = { top: 0, left: 0, width: 1680, height: 1050 };
 
 function errFun(msg, trace) {
-    console.error('--------------------- Err! --------------------- ');
-    // console.log(msg);
-    // console.log(trace);
+    console.log('--------------------- Err! --------------------- ');
+    console.log(msg);
+    console.log(trace);
     phantom.exit(1);
 };
 page.onError = errFun;

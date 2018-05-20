@@ -11,7 +11,8 @@ require('dotenv').config();
 // PhantomJS command-line args and options
 let args = ['./phantom-script.js',
     /* args 1 and 2 */ process.env.LOGIN_URL, process.env.URL,
-    /* args 3 and 4 */ process.env.SITE_USERNAME, process.env.SITE_PASSWORD
+    /* args 3 and 4 */ process.env.SITE_USERNAME, process.env.SITE_PASSWORD,
+    /* args 5 and 6 */ process.env.AUTH_COOKIE_NAME, process.env.SITE_CLASS
 ];
 let options = {};
 

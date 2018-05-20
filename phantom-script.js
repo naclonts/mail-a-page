@@ -5,19 +5,6 @@ var loadInProgress = false;
 /*****************************************************************************/
 // Phantom Page configuration
 /*****************************************************************************/
-// Loading status
-page.onLoadStarted = function() {
-    loadInProgress = true;
-    console.log('Loading started');
-};
-page.onLoadFinished = function() {
-    loadInProgress = false;
-    console.log('Loading finished');
-};
-page.onConsoleMessage = function(msg) {
-    console.log(msg);
-};
-
 //viewportSize being the actual size of the headless browser
 page.viewportSize = { width: 1680, height: 1050 };
 //the clipRect is the portion of the page you are taking a screenshot of
@@ -52,32 +39,61 @@ if (username === undefined || password === undefined) {
 }
 // Settings for login POST
 var postBody = 'username=' + username + '&password=' + password;
-
+// Auth cookie name
+var authCookieName = system.args[5];
+var elementClass = system.args[6];
 
 /*****************************************************************************/
 // Perform login & page retrieval! Killin' it!
 /*****************************************************************************/
+var authCookie;
+// Post to login endpoint to get that sweet authentication cookie!
 page.open(loginUrl, 'POST', postBody, function(status) {
     console.log("Status:  " + status);
     console.log("Loaded:  " + page.url);
-    pprint(page.cookies);
-    console.log(page.content);
-    // var html = page.evaluate(function() {
-    //     return document.getElementsByClassName('content-wrapper')[0].outerHTML;
-    // });
-    // console.log(html);
-    phantom.exit();
+    authCookie = page.cookies.filter(function(cookie) {
+        return cookie.name == authCookieName;
+    })[0];
+    pprint(authCookie);
+    if (!authCookie) {
+        console.log('Uh oh! No auth token cookie!')
+        throw new Error('No auth token cookie provided by login response!');
+    }
 });
 
+// Open data page after 3 seconds, giving time for login to finish
+setTimeout(function loadRealPage() {
+    phantom.addCookie(authCookie);
+    page.open(pageUrl, function(status) {
+        console.log("Status:  " + status);
+        console.log("Loaded:  " + page.url);
+        // Evaluate page asynchronously, giving time to populate with any AJAX
+        // data (and finish front-end JS framework action)
+        function checkPageReady() {
+            var html = page.evaluate(function() {
+                var content = document.getElementsByClassName('dashboard')[0];
+                if (content && content.childElementCount > 0) {
+                    return content.outerHTML;
+                }
+            });
+            if (html) {
+                console.log(html);
+                phantom.exit();
+            } else {
+                console.log('try again...');
+                setTimeout(checkPageReady, 1000);
+            }
+        }
+        checkPageReady();
+        // setTimeout(checkReadyState, 5000);
+    });
+}, 3000);
 
-// Open website
-// page.open(websiteAddress, function(status) {
-//     // Show some message in the console
-//     console.log("Status:  " + status);
-//     console.log("Loaded:  " + page.url);
-//     var html = page.evaluate(function() {
-//         return document.getElementsByClassName('content-wrapper')[0].outerHTML;
-//     });
-//     console.log(html);
-//     phantom.exit();
-// });
+// Once page is loaded, return HTML
+function onPageReady() {
+    var html = page.evaluate(function() {
+        return document.getElementsByClassName('dashboard');
+    });
+    pprint(html);
+    phantom.exit();
+}

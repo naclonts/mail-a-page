@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^5.0.1"
+    "dotenv": "^5.0.1",
+    "nodemailer": "^4.6.4"
   }
 }

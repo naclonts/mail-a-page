@@ -2,6 +2,9 @@ var system = require('system');
 var page = require('webpage').create();
 var loadInProgress = false;
 
+// debug flag
+var dbg = false;
+
 page.onConsoleMessage = function(msg, lineNum, sourceId) {
   pprint(msg);
 };
@@ -15,7 +18,7 @@ page.viewportSize = { width: 1680, height: 1050 };
 page.clipRect = { top: 0, left: 0, width: 1680, height: 1050 };
 
 function errFun(msg, trace) {
-    console.log('--------------------- Err! --------------------- ');
+    pprint('--------------------- Err! --------------------- ');
     pprint(msg);
     pprint(trace);
     phantom.exit(1);
@@ -25,6 +28,7 @@ phantom.onError = errFun;
 
 // Pretty-print utility
 function pprint(object) {
+    if (!dbg) return;
     console.log(JSON.stringify(object, null, 2));
 }
 
@@ -53,14 +57,14 @@ var elementClass = system.args[6];
 var authCookie;
 // Post to login endpoint to get that sweet authentication cookie!
 page.open(loginUrl, 'POST', postBody, function(status) {
-    console.log("Status:  " + status);
-    console.log("Loaded:  " + page.url);
+    pprint("Status:  " + status);
+    pprint("Loaded:  " + page.url);
     authCookie = page.cookies.filter(function(cookie) {
         return cookie.name == authCookieName;
     })[0];
-    pprint(authCookie);
+    // pprint(authCookie);
     if (!authCookie) {
-        console.log('Uh oh! No auth token cookie!')
+        pprint('Uh oh! No auth token cookie!')
         throw new Error('No auth token cookie provided by login response!');
     }
 });
@@ -69,8 +73,8 @@ page.open(loginUrl, 'POST', postBody, function(status) {
 setTimeout(function loadRealPage() {
     phantom.addCookie(authCookie);
     page.open(pageUrl, function(status) {
-        console.log("Status:  " + status);
-        console.log("Loaded:  " + page.url);
+        pprint("Status:  " + status);
+        pprint("Loaded:  " + page.url);
         // Evaluate page asynchronously, giving time to populate with any AJAX
         // data (and finish front-end JS framework action)
         function checkPageReady() {
@@ -82,10 +86,11 @@ setTimeout(function loadRealPage() {
             }, elementClass);
             pprint(page.errors);
             if (html) {
-                pprint(html);
+                // Output HTML and exit!
+                console.log(html);
                 phantom.exit();
             } else {
-                console.log('try again...');
+                pprint('try again...');
                 setTimeout(checkPageReady, 1000);
             }
         }

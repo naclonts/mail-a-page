@@ -9,7 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chai": "^4.1.2",
     "dotenv": "^5.0.1",
+    "mocha": "^5.2.0",
     "nodemailer": "^4.6.4"
   }
 }

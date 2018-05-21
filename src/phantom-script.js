@@ -3,7 +3,7 @@ var page = require('webpage').create();
 var loadInProgress = false;
 
 // debug flag
-var dbg = false;
+var dbg = true;
 
 page.onConsoleMessage = function(msg, lineNum, sourceId) {
   pprint(msg);
@@ -26,7 +26,7 @@ function errFun(msg, trace) {
 page.onError = errFun;
 phantom.onError = errFun;
 
-// Pretty-print utility
+// Pretty-print utility. Only outputs to console if `dbg` is true.
 function pprint(object) {
     if (!dbg) return;
     console.log(JSON.stringify(object, null, 2));
@@ -69,13 +69,17 @@ page.open(loginUrl, 'POST', postBody, function(status) {
     }
 });
 
-// Open data page after 3 seconds, giving time for login to finish
+// Max number of times to try getting HTML element.
+var MAX_ATTEMPTS = 50;
+
+// Open data page after 6 seconds, giving time for login to finish
 setTimeout(function loadRealPage() {
     phantom.addCookie(authCookie);
     page.open(pageUrl, function(status) {
         pprint("Status:  " + status);
         pprint("Loaded:  " + page.url);
-        // Evaluate page asynchronously, giving time to populate with any AJAX
+        var attempts = 0;
+        // Evaluate page repeatedly, giving time to populate with any AJAX
         // data (and finish front-end JS framework action)
         function checkPageReady() {
             var html = page.evaluate(function(query) {
@@ -89,11 +93,15 @@ setTimeout(function loadRealPage() {
                 // Output HTML and exit!
                 console.log(html);
                 phantom.exit();
+            } else if (attempts < MAX_ATTEMPTS) {
+                attempts++;
+                pprint('try again... numero ' + attempts);
+                setTimeout(checkPageReady, 5000);
             } else {
-                pprint('try again...');
-                setTimeout(checkPageReady, 1000);
+                console.log('Requested data could not be found! Sorry!');
+                phantom.exit();
             }
         }
         checkPageReady();
     });
-}, 3000);
+}, 6000);

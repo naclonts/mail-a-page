@@ -9,4 +9,6 @@ Node spawns a child PhantomJS process, then emails out the resulting HTML with N
 ## Install
 Install PhantomJS and add it to the system path.
 
-Create a `.env` file specifying a `URL` environment variable. This is the page that will be emailed.
+Create a `.env` file specifying the environment variables listed in `.env.example`.
+
+Email is set to go through Outlook by default. This could pretty easily be changed by modifying the `src/email.js` file.

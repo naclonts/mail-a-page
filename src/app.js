@@ -17,6 +17,7 @@ let args = [path.join(__dirname, 'phantom-script.js'),
 // PhantomJS executable path
 let phantomExecutable = 'phantomjs';
 
+
 /**
  * Convert a Uint8Array to its String form
  * @param   {Uint8Array} uint8Arr
@@ -26,6 +27,8 @@ function Uint8ArrayToString(uint8Arr) {
     return String.fromCharCode.apply(null, uint8Arr);
 }
 
+
+// Create PhantomJS process
 let child = spawn(phantomExecutable, args);
 
 // Receive output

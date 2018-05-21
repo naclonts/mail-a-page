@@ -4,9 +4,16 @@
  * Credit to Our Code World for their tutorial:
  *  https://ourcodeworld.com/articles/read/379/how-to-use-phantomjs-with-node-js
  */
+// Libraries
+const moment = require('moment');
 const path = require('path');
 const spawn = require('child_process').spawn;
+// Load .env file to process.env
 require('dotenv').config();
+
+// Import modules
+const email = require('./email');
+
 
 // PhantomJS command-line args and options
 let args = [path.join(__dirname, 'phantom-script.js'),
@@ -30,17 +37,34 @@ function Uint8ArrayToString(uint8Arr) {
 
 // Create PhantomJS process
 let child = spawn(phantomExecutable, args);
+let output = '';
 
 // Receive output
 child.stdout.on('data', (data) => {
     let text = Uint8ArrayToString(data);
     console.log(text);
+    output += text;
 });
 child.stderr.on('data', (err) => {
     console.log(`Error in PhantomJS process!`);
     let text = Uint8ArrayToString(err);
     console.log(text);
 });
-child.on('close', (code) => {
+child.on('close', async (code) => {
     console.log(`Process closed with status code: ${code}`);
+    // Email results
+    let options = {
+        from: process.env.NODEMAILER_USER,
+        to: process.env.NODEMAILER_USER,
+        subject: `${process.env.EMAIL_SUBJECT} - ${moment().format("M/D/Y")}`,
+        text: '',
+        html: output
+    };
+    let res = await email.send(options);
+    if (!res.accepted || res.accepted.length == 0) {
+        console.error(`[${moment()}] Email not accepted! Response: ${res}`);
+    }
+    if (res.rejected && res.rejected.length > 0) {
+        console.error(`[${moment()}] Email rejected. Response: ${res}`);
+    }
 });

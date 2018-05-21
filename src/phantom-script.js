@@ -3,7 +3,7 @@ var page = require('webpage').create();
 var loadInProgress = false;
 
 // debug flag
-var dbg = true;
+var dbg = false;
 
 page.onConsoleMessage = function(msg, lineNum, sourceId) {
   pprint(msg);

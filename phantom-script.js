@@ -74,12 +74,12 @@ setTimeout(function loadRealPage() {
         // Evaluate page asynchronously, giving time to populate with any AJAX
         // data (and finish front-end JS framework action)
         function checkPageReady() {
-            var html = page.evaluate(function() {
-                var content = document.getElementsByClassName('dashboard')[0];
+            var html = page.evaluate(function(query) {
+                var content = document.getElementsByClassName(query)[0];
                 if (content && content.childElementCount > 0) {
                     return content.outerHTML;
                 }
-            });
+            }, elementClass);
             pprint(page.errors);
             if (html) {
                 pprint(html);

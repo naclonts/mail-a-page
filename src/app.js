@@ -50,6 +50,7 @@ child.stderr.on('data', (err) => {
     let text = Uint8ArrayToString(err);
     console.log(text);
 });
+// When finished, ship it off!
 child.on('close', async (code) => {
     console.log(`Process closed with status code: ${code}`);
     // Email results
@@ -58,7 +59,7 @@ child.on('close', async (code) => {
         to: process.env.NODEMAILER_USER,
         subject: `${process.env.EMAIL_SUBJECT} - ${moment().format("M/D/Y")}`,
         text: '',
-        html: output
+        html: processHtml(output)
     };
     let res = await email.send(options);
     if (!res.accepted || res.accepted.length == 0) {
@@ -68,3 +69,16 @@ child.on('close', async (code) => {
         console.error(`[${moment()}] Email rejected. Response: ${res}`);
     }
 });
+
+// Add any desired inline styles here (before being sent in email).
+function processHtml(html) {
+    let res = html;
+
+    // Draw black borders around table cells
+    res = res.replace(
+        /<td/g,
+        '<td style="border: 1px solid #666; border-collapse: collapse;"'
+    );
+
+    return res;
+}

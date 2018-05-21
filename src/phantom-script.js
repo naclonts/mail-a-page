@@ -12,10 +12,10 @@ page.onConsoleMessage = function(msg, lineNum, sourceId) {
 /*****************************************************************************/
 // Phantom Page configuration
 /*****************************************************************************/
-//viewportSize being the actual size of the headless browser
-page.viewportSize = { width: 1680, height: 1050 };
-//the clipRect is the portion of the page you are taking a screenshot of
-page.clipRect = { top: 0, left: 0, width: 1680, height: 1050 };
+// //viewportSize being the actual size of the headless browser
+// page.viewportSize = { width: 1680, height: 1050 };
+// //the clipRect is the portion of the page you are taking a screenshot of
+// page.clipRect = { top: 0, left: 0, width: 1680, height: 1050 };
 
 function errFun(msg, trace) {
     pprint('--------------------- Err! --------------------- ');

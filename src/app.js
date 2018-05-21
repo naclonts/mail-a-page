@@ -1,3 +1,4 @@
+#!/usr/bin/env nodejs
 /**
  * Run phantom-script.js from a node process.
  *
@@ -9,7 +10,7 @@ const moment = require('moment');
 const path = require('path');
 const spawn = require('child_process').spawn;
 // Load .env file to process.env
-require('dotenv').config();
+require('dotenv').config({path: __dirname+'/./../.env'});
 
 // Import modules
 const email = require('./email');
@@ -22,7 +23,7 @@ let args = [path.join(__dirname, 'phantom-script.js'),
     /* args 5 and 6 */ process.env.AUTH_COOKIE_NAME, process.env.SITE_CLASS
 ];
 // PhantomJS executable path
-let phantomExecutable = 'phantomjs';
+let phantomExecutable = process.env.PHANTOMJS_EXE || 'phantomjs';
 
 
 /**

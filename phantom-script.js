@@ -2,6 +2,10 @@ var system = require('system');
 var page = require('webpage').create();
 var loadInProgress = false;
 
+page.onConsoleMessage = function(msg, lineNum, sourceId) {
+  pprint(msg);
+};
+
 /*****************************************************************************/
 // Phantom Page configuration
 /*****************************************************************************/
@@ -12,8 +16,8 @@ page.clipRect = { top: 0, left: 0, width: 1680, height: 1050 };
 
 function errFun(msg, trace) {
     console.log('--------------------- Err! --------------------- ');
-    console.log(msg);
-    console.log(trace);
+    pprint(msg);
+    pprint(trace);
     phantom.exit(1);
 };
 page.onError = errFun;
@@ -76,8 +80,9 @@ setTimeout(function loadRealPage() {
                     return content.outerHTML;
                 }
             });
+            pprint(page.errors);
             if (html) {
-                console.log(html);
+                pprint(html);
                 phantom.exit();
             } else {
                 console.log('try again...');
@@ -85,15 +90,5 @@ setTimeout(function loadRealPage() {
             }
         }
         checkPageReady();
-        // setTimeout(checkReadyState, 5000);
     });
 }, 3000);
-
-// Once page is loaded, return HTML
-function onPageReady() {
-    var html = page.evaluate(function() {
-        return document.getElementsByClassName('dashboard');
-    });
-    pprint(html);
-    phantom.exit();
-}

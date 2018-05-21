@@ -56,7 +56,7 @@ child.on('close', async (code) => {
     // Email results
     let options = {
         from: process.env.NODEMAILER_USER,
-        to: process.env.NODEMAILER_USER,
+        to: process.env.EMAIL_TO.split(';'),
         subject: `${process.env.EMAIL_SUBJECT} - ${moment().format("M/D/Y")}`,
         text: '',
         html: processHtml(output)

@@ -47,13 +47,13 @@ child.stdout.on('data', (data) => {
     output += text;
 });
 child.stderr.on('data', (err) => {
-    console.log(`Error in PhantomJS process!`);
+    console.log(`[${moment()}] Error in PhantomJS process!`);
     let text = Uint8ArrayToString(err);
     console.log(text);
 });
 // When finished, ship it off!
 child.on('close', async (code) => {
-    console.log(`Process closed with status code: ${code}`);
+    console.log(`[${moment()}] Process closed with status code: ${code}`);
     // Email results
     let options = {
         from: process.env.NODEMAILER_USER,

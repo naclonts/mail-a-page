@@ -1,3 +1,8 @@
+/**
+ * PhantomJS process triggered by NodeJS.
+ *
+ * Logs HTML resulting from Node's `spawn` arguments.
+ */
 var system = require('system');
 var page = require('webpage').create();
 var loadInProgress = false;
@@ -12,11 +17,6 @@ page.onConsoleMessage = function(msg, lineNum, sourceId) {
 /*****************************************************************************/
 // Phantom Page configuration
 /*****************************************************************************/
-// //viewportSize being the actual size of the headless browser
-// page.viewportSize = { width: 1680, height: 1050 };
-// //the clipRect is the portion of the page you are taking a screenshot of
-// page.clipRect = { top: 0, left: 0, width: 1680, height: 1050 };
-
 function errFun(msg, trace) {
     pprint('--------------------- Err! --------------------- ');
     pprint(msg);
@@ -98,6 +98,7 @@ setTimeout(function loadRealPage() {
                 pprint('try again... numero ' + attempts);
                 setTimeout(checkPageReady, 5000);
             } else {
+                // If MAX_ATTEMPTS is exceeded, just return an apology
                 console.log('Requested data could not be found! Sorry!');
                 phantom.exit();
             }

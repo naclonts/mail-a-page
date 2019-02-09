@@ -15,6 +15,10 @@ require('dotenv').config({path: __dirname+'/./../.env'});
 // Import modules
 const email = require('./email');
 
+// Script Settings
+const SITE_CLASS = process.env.SITE_CLASS
+
+
 
 // // PhantomJS command-line args and options
 // let args = [path.join(__dirname, 'phantom-script.js'),
@@ -51,7 +55,42 @@ function processHtml(html) {
 
 
 
+async function start(urlToFetch) {
+    console.log('starting')
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
 
+
+    page.on('response', async (response) => {
+        console.log('response')
+        const buff = await response.buffer();
+        console.log(buff)
+    });
+
+    await page.goto(urlToFetch, {
+        waitUntil: 'networkidle2',
+    });
+
+    const htmlContent = await page.evaluate((cssQuery) => {
+        const content = document.getElementsByClassName(cssQuery)[0];
+        console.log(
+            'doing the thing'
+        )
+        if (content && content.childElementCount > 0) {
+            return Promise.resolve(content.outerHTML);
+        }
+        return Promise.reject(`[${new Date().toLocaleString()}] No HTML content found for ${cssQuery}!`)
+    }, SITE_CLASS);
+
+    console.log(htmlContent)
+
+    setTimeout(async () => {
+        await browser.close();
+        process.exit(0);
+    }, 1000);
+}
+
+start('https://nathanclonts.com')
 
 
 

@@ -71,18 +71,35 @@ async function start(urlToFetch) {
         waitUntil: 'networkidle2',
     });
 
-    const htmlContent = await page.evaluate((cssQuery) => {
-        const content = document.getElementsByClassName(cssQuery)[0];
-        console.log(
-            'doing the thing'
-        )
-        if (content && content.childElementCount > 0) {
-            return Promise.resolve(content.outerHTML);
+    try {
+        const htmlContent = await page.evaluate((cssQuery) => {
+            const content = document.getElementsByClassName(cssQuery)[0];
+            if (content && content.childElementCount > 0) {
+                return Promise.resolve(content.outerHTML);
+            }
+            return Promise.reject(`[${new Date().toLocaleString()}] No HTML content found for ${cssQuery}!`)
+        }, SITE_CLASS);
+        console.log(htmlContent);
+        // Email results
+        let options = {
+            from: process.env.NODEMAILER_USER,
+            to: process.env.EMAIL_TO.split(';'),
+            subject: `${process.env.EMAIL_SUBJECT} - ${moment().format("M/D/Y")}`,
+            text: '',
+            html: processHtml(htmlContent)
+        };
+        let res = await email.send(options);
+        if (!res.accepted || res.accepted.length == 0) {
+            console.error(`[${moment()}] Email not accepted! Response: ${res}`);
         }
-        return Promise.reject(`[${new Date().toLocaleString()}] No HTML content found for ${cssQuery}!`)
-    }, SITE_CLASS);
-
-    console.log(htmlContent)
+        if (res.rejected && res.rejected.length > 0) {
+            console.error(`[${moment()}] Email rejected. Response: ${res}`);
+        }
+    }
+    catch (e) {
+        console.error(`[${moment()}] Error during HTML pull or email:`);
+        console.error(e);
+    }
 
     setTimeout(async () => {
         await browser.close();

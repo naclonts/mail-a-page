@@ -1,5 +1,5 @@
 # Get a website by email
-This small Node app is designed to automatically retrieve a webpage, then email it to a distribution list at a specified time. Works with SPA's as well as server-rendered pages, including some support for authentication through a login page.
+This small Node app is designed to automatically retrieve a webpage, then email it to a distribution list at a specified time. Works with SPA's as well as server-rendered pages, including support for authentication through a login page.
 
 - Generate & email reports from dashboards
 - Record a site's generated content daily

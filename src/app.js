@@ -5,70 +5,68 @@
 
 // Libraries
 const moment = require('moment');
-const path = require('path');
 const puppeteer = require('puppeteer');
-const { URL } = require('url');
-
-// Load .env file to process.env
-require('dotenv').config({path: __dirname+'/./../.env'});
-
-// Import modules
+require('dotenv').config({path: __dirname+'/./../.env'}); // Load .env file to process.env
 const email = require('./email');
 
+//////////////////////////////
 // Script Settings
-const SITE_CLASS = process.env.SITE_CLASS
+const SITE_CLASS = process.env.SITE_CLASS;
+const LOGIN_URL = process.env.LOGIN_URL;
+const SITE_URL = process.env.URL;
+const SITE_USERNAME = process.env.SITE_USERNAME;
+const SITE_PASSWORD = process.env.SITE_PASSWORD;
+const NODEMAILER_USER = process.env.NODEMAILER_USER;
+const EMAIL_TO = process.env.EMAIL_TO;
+const EMAIL_SUBJECT = process.env.EMAIL_SUBJECT;
 
-
-
-// // PhantomJS command-line args and options
-// let args = [path.join(__dirname, 'phantom-script.js'),
-//     /* args 1 and 2 */ process.env.LOGIN_URL, process.env.URL,
-//     /* args 3 and 4 */ process.env.SITE_USERNAME, process.env.SITE_PASSWORD,
-//     /* args 5 and 6 */ process.env.AUTH_COOKIE_NAME, process.env.SITE_CLASS
-// ];
-// // PhantomJS executable path
-// let phantomExecutable = process.env.PHANTOMJS_EXE || 'phantomjs';
+// Hardcoded login form inputs. Change as needed.
+const LOGIN_USERNAME_SELECTOR = 'input[name="username"]';
+const LOGIN_PASSWORD_SELECTOR = 'input[name="password"]';
+const LOGIN_SUBMIT_SELECTOR = 'button[type="submit"]';
 
 
 /**
- * Convert a Uint8Array to its String form
- * @param   {Uint8Array} uint8Arr
- * @return  {String}
+ * Add inline styles here
  */
-function Uint8ArrayToString(uint8Arr) {
-    return String.fromCharCode.apply(null, uint8Arr);
-}
-
-
-// Add any desired inline styles here (before being sent in email).
 function processHtml(html) {
     let res = html;
 
-    // Draw black borders around table cells
+    // Draw black collapsed borders around table cells
+    res = res.replace(
+        /<table/g,
+        '<table style="border: 1px solid #666; border-collapse: collapse;"'
+    );
     res = res.replace(
         /<td/g,
-        '<td style="border: 1px solid #666; border-collapse: collapse;"'
+        '<td style="border: 1px solid #666;"'
     );
 
     return res;
 }
 
 
-
-async function start(urlToFetch) {
-    console.log('starting')
+async function start() {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
-
-    page.on('response', async (response) => {
-        console.log('response')
-        const buff = await response.buffer();
-        console.log(buff)
+    //////////////////////////////
+    // Log in
+    await page.goto(LOGIN_URL, {
+        waitUntil: 'networkidle0',
     });
 
-    await page.goto(urlToFetch, {
-        waitUntil: 'networkidle2',
+    await page.click(LOGIN_USERNAME_SELECTOR);
+    await page.keyboard.type(SITE_USERNAME);
+    await page.click(LOGIN_PASSWORD_SELECTOR);
+    await page.keyboard.type(SITE_PASSWORD);
+    await page.click(LOGIN_SUBMIT_SELECTOR);
+    await page.waitForNavigation();
+
+    //////////////////////////////
+    // Go to the target page
+    await page.goto(SITE_URL, {
+        waitUntil: 'networkidle0',
     });
 
     try {
@@ -79,14 +77,14 @@ async function start(urlToFetch) {
             }
             return Promise.reject(`[${new Date().toLocaleString()}] No HTML content found for ${cssQuery}!`)
         }, SITE_CLASS);
-        console.log(htmlContent);
+
         // Email results
         let options = {
-            from: process.env.NODEMAILER_USER,
-            to: process.env.EMAIL_TO.split(';'),
-            subject: `${process.env.EMAIL_SUBJECT} - ${moment().format("M/D/Y")}`,
+            from: NODEMAILER_USER,
+            to: EMAIL_TO.split(';'),
+            subject: `${EMAIL_SUBJECT} - ${moment().format("M/D/Y")}`,
             text: '',
-            html: processHtml(htmlContent)
+            html: processHtml(htmlContent),
         };
         let res = await email.send(options);
         if (!res.accepted || res.accepted.length == 0) {
@@ -95,66 +93,19 @@ async function start(urlToFetch) {
         if (res.rejected && res.rejected.length > 0) {
             console.error(`[${moment()}] Email rejected. Response: ${res}`);
         }
+
     }
     catch (e) {
         console.error(`[${moment()}] Error during HTML pull or email:`);
         console.error(e);
     }
 
+    //////////////////////////////
+    // Exit the process after a minimum of 15 seconds
     setTimeout(async () => {
         await browser.close();
         process.exit(0);
-    }, 1000);
+    }, 15000);
 }
 
-start('https://nathanclonts.com')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // Create PhantomJS process
-// let child = spawn(phantomExecutable, args);
-// let output = '';
-
-// // Receive output
-// child.stdout.on('data', (data) => {
-//     let text = Uint8ArrayToString(data);
-//     console.log(text);
-//     output += text;
-// });
-// child.stderr.on('data', (err) => {
-//     console.log(`[${moment()}] Error in PhantomJS process!`);
-//     let text = Uint8ArrayToString(err);
-//     console.log(text);
-// });
-// // When finished, ship it off!
-// child.on('close', async (code) => {
-//     console.log(`[${moment()}] Process closed with status code: ${code}`);
-//     // Email results
-//     let options = {
-//         from: process.env.NODEMAILER_USER,
-//         to: process.env.EMAIL_TO.split(';'),
-//         subject: `${process.env.EMAIL_SUBJECT} - ${moment().format("M/D/Y")}`,
-//         text: '',
-//         html: processHtml(output)
-//     };
-//     let res = await email.send(options);
-//     if (!res.accepted || res.accepted.length == 0) {
-//         console.error(`[${moment()}] Email not accepted! Response: ${res}`);
-//     }
-//     if (res.rejected && res.rejected.length > 0) {
-//         console.error(`[${moment()}] Email rejected. Response: ${res}`);
-//     }
-// });
+start()

@@ -18,4 +18,6 @@ Run `npm install`.
 
 Create a `.env` file specifying the environment variables listed in `.env.example`.
 
+Running `npm src/app.js` will pull the page and send the email, based on your env settings.
+
 Email is set to go through Outlook by default. This could easily be changed by modifying the `src/email.js` file's `transporter` object.

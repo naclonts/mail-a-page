@@ -15,6 +15,7 @@ let transporter = nodemailer.createTransport({
 });
 
 async function send(options) {
+    options.from = process.env.EMAIL_FROM
     return new Promise((resolve, reject) => {
         transporter.sendMail(options, (err, info) => {
             if (err) {

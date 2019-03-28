@@ -66,7 +66,7 @@ async function start() {
     //////////////////////////////
     // Go to the target page
     await page.goto(SITE_URL, {
-        waitUntil: 'networkidle2',
+        waitUntil: 'networkidle0',
 	timeout: 0, // never timeout
     });
 
